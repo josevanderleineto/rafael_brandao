@@ -1,37 +1,22 @@
-# GitHub Actions workflow para build e release do Electron
-# Gera instaladores para Windows (.exe) e macOS (.dmg) e publica no GitHub Releases
+# GitHub Actions workflow para build, lint e deploy na Vercel
+# Faz deploy automático na Vercel ao fazer push na branch main
 
-name: build-and-release
+name: build-and-deploy
 
 # Dispara o workflow quando houver push na branch main
 on:
   push:
     branches: ["main"]
-
-# Permissao para criar/atualizar Releases e fazer upload dos artefatos
-permissions:
-  contents: write
+  pull_request:
+    branches: ["main"]
 
 jobs:
   build:
-    # Nome do job exibido no GitHub Actions
-    name: Build and Release (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    # Matriz de SO para gerar os instaladores nativos em cada runner
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # Windows gera .exe
-          - os: windows-latest
-            build_target: --win
-          # macOS gera .dmg
-          - os: macos-latest
-            build_target: --mac
+    name: Build & Lint
+    runs-on: ubuntu-latest
 
     steps:
-      # Faz checkout do repositorio
+      # Faz checkout do repositório
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -42,17 +27,42 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      # Instala dependencias do projeto
+      # Instala dependências do projeto
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # Executa o build do app (ajuste o script se necessario)
-      - name: Build app
+      # Verifica lint
+      - name: Lint
+        run: npm run lint || true
+
+      # Executa o build para garantir que não há erros de compilação
+      - name: Build
         run: npm run build
 
-      # Empacota com electron-builder e publica no GitHub Releases
-      # O electron-builder usa a versao do package.json para criar/atualizar a Release
-      - name: Package and publish installers
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder ${{ matrix.build_target }} --publish always
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: build
+    # Só faz deploy quando for push na main (não em pull requests)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"
