@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8d5b7"/>
+      <stop offset="40%" stop-color="#CEB99A"/>
+      <stop offset="100%" stop-color="#9e8060"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ddd0b8"/>
+      <stop offset="50%" stop-color="#CEB99A"/>
+      <stop offset="100%" stop-color="#a88d6a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- === Monogram RB (left square) === -->
+  <rect width="180" height="180" x="10" y="10" rx="3" fill="#12314D"/>
+
+  <!-- R: stem -->
+  <rect x="30" y="35" width="14" height="130" fill="url(#g1)" rx="2"/>
+  <!-- R: top arch -->
+  <path d="M30 35 L84 35 Q110 35 110 62 Q110 88 84 88 L44 88 L30 88 Z" fill="url(#g1)"/>
+  <path d="M44 48 L81 48 Q96 48 96 62 Q96 76 81 76 L44 76 Z" fill="#12314D"/>
+  <!-- R: diagonal leg -->
+  <path d="M44 88 L108 165 L92 165 L40 100 Z" fill="url(#g1)"/>
+
+  <!-- Separator line -->
+  <rect x="118" y="42" width="1.5" height="116" fill="url(#g1)" opacity="0.55"/>
+
+  <!-- B: stem -->
+  <rect x="124" y="35" width="14" height="130" fill="url(#g2)" rx="2"/>
+  <!-- B: top bump -->
+  <path d="M124 35 L163 35 Q186 35 186 62 Q186 88 163 88 L138 88 L124 88 Z" fill="url(#g2)"/>
+  <path d="M138 48 L160 48 Q172 48 172 62 Q172 76 160 76 L138 76 Z" fill="#12314D"/>
+  <!-- B: bottom bump -->
+  <path d="M124 88 L167 88 Q190 88 190 117 Q190 146 167 146 L138 146 L124 146 Z" fill="url(#g2)"/>
+  <path d="M138 100 L163 100 Q176 100 176 117 Q176 134 163 134 L138 134 Z" fill="#12314D"/>
+  <!-- clip right overflow -->
+  <rect x="188" y="10" width="4" height="180" fill="#12314D"/>
+
+  <!-- bottom accent line inside square -->
+  <rect x="30" y="158" width="130" height="1.5" fill="url(#g1)" opacity="0.45"/>
+
+  <!-- === Vertical gold separator === -->
+  <rect x="208" y="30" width="1.5" height="140" fill="url(#g1)" opacity="0.5"/>
+
+  <!-- === Text side === -->
+  <!-- RAFAEL BRANDÃO -->
+  <text
+    x="228"
+    y="100"
+    font-family="Cinzel, 'Cormorant Garamond', serif"
+    font-size="42"
+    font-weight="600"
+    letter-spacing="6"
+    fill="#12314D"
+  >RAFAEL BRANDÃO</text>
+
+  <!-- decorative line under name -->
+  <rect x="228" y="112" width="640" height="1" fill="url(#g1)" opacity="0.55"/>
+
+  <!-- Diamond dot -->
+  <rect x="536" y="108" width="7" height="7" fill="url(#g1)" transform="rotate(45 539 111)" opacity="0.8"/>
+
+  <!-- DESENVOLVIMENTO IMOBILIÁRIO -->
+  <text
+    x="228"
+    y="140"
+    font-family="Cinzel, 'Cormorant Garamond', serif"
+    font-size="14"
+    font-weight="400"
+    letter-spacing="8"
+    fill="url(#g1)"
+  >DESENVOLVIMENTO IMOBILIÁRIO</text>
+</svg>

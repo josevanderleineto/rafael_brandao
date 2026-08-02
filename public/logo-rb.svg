@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background navy -->
+  <rect width="512" height="512" fill="#12314D"/>
+
+  <!-- Gold gradient definition -->
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8d5b7"/>
+      <stop offset="35%" stop-color="#CEB99A"/>
+      <stop offset="65%" stop-color="#CEB99A"/>
+      <stop offset="100%" stop-color="#9e8060"/>
+    </linearGradient>
+    <linearGradient id="goldGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ddd0b8"/>
+      <stop offset="50%" stop-color="#CEB99A"/>
+      <stop offset="100%" stop-color="#a88d6a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Letter R -->
+  <!-- Vertical stem of R -->
+  <rect x="100" y="120" width="42" height="272" fill="url(#goldGrad)" rx="4"/>
+  <!-- Top bar of R -->
+  <path d="M100 120 L240 120 Q300 120 300 180 Q300 240 240 240 L142 240 L100 240 Z" fill="url(#goldGrad)"/>
+  <!-- Inner cutout of R (counter) -->
+  <path d="M142 148 L225 148 Q268 148 268 180 Q268 212 225 212 L142 212 Z" fill="#12314D"/>
+  <!-- Leg of R (diagonal) -->
+  <path d="M142 240 L290 392 L248 392 L130 258 Z" fill="url(#goldGrad)"/>
+  <!-- Corner fill at leg base -->
+  <path d="M142 240 L186 240 L248 392 L248 392 L204 392 Z" fill="url(#goldGrad)"/>
+
+  <!-- Thin decorative vertical line separator -->
+  <rect x="314" y="130" width="2" height="252" fill="url(#goldGrad)" opacity="0.6"/>
+
+  <!-- Letter B -->
+  <!-- Vertical stem of B -->
+  <rect x="328" y="120" width="42" height="272" fill="url(#goldGrad2)" rx="4"/>
+  <!-- Top bump of B -->
+  <path d="M328 120 L440 120 Q500 120 500 185 Q500 250 440 250 L370 250 L328 250 Z" fill="url(#goldGrad2)"/>
+  <!-- Top counter of B -->
+  <path d="M370 148 L432 148 Q468 148 468 185 Q468 222 432 222 L370 222 Z" fill="#12314D"/>
+  <!-- Bottom bump of B -->
+  <path d="M328 250 L448 250 Q512 250 512 320 Q512 392 448 392 L370 392 L328 392 Z" fill="url(#goldGrad2)"/>
+  <!-- Clip to viewBox right edge -->
+  <rect x="500" y="0" width="12" height="512" fill="#12314D"/>
+  <!-- Bottom counter of B -->
+  <path d="M370 278 L440 278 Q480 278 480 320 Q480 364 440 364 L370 364 Z" fill="#12314D"/>
+
+  <!-- Bottom decorative line -->
+  <rect x="100" y="430" width="312" height="2" fill="url(#goldGrad)" opacity="0.5"/>
+  <!-- Dot -->
+  <circle cx="256" cy="460" r="6" fill="url(#goldGrad)" opacity="0.7"/>
+</svg>

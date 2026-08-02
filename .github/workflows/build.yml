@@ -1,0 +1,58 @@
+# GitHub Actions workflow para build e release do Electron
+# Gera instaladores para Windows (.exe) e macOS (.dmg) e publica no GitHub Releases
+
+name: build-and-release
+
+# Dispara o workflow quando houver push na branch main
+on:
+  push:
+    branches: ["main"]
+
+# Permissao para criar/atualizar Releases e fazer upload dos artefatos
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # Nome do job exibido no GitHub Actions
+    name: Build and Release (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    # Matriz de SO para gerar os instaladores nativos em cada runner
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows gera .exe
+          - os: windows-latest
+            build_target: --win
+          # macOS gera .dmg
+          - os: macos-latest
+            build_target: --mac
+
+    steps:
+      # Faz checkout do repositorio
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Instala Node.js e habilita cache do npm
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      # Instala dependencias do projeto
+      - name: Install dependencies
+        run: npm install
+
+      # Executa o build do app (ajuste o script se necessario)
+      - name: Build app
+        run: npm run build
+
+      # Empacota com electron-builder e publica no GitHub Releases
+      # O electron-builder usa a versao do package.json para criar/atualizar a Release
+      - name: Package and publish installers
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder ${{ matrix.build_target }} --publish always

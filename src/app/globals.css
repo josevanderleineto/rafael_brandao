@@ -1,0 +1,172 @@
+/* ── Google Fonts ── */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap");
+
+/* ── Tailwind CSS ── */
+@import "tailwindcss";
+
+@theme inline {
+  /* ── Rafael Brandão Brand Colors ── */
+  --color-brand-navy:       #12314D;
+  --color-brand-navy-dark:  #0d2238;
+  --color-brand-navy-light: #1a3d5c;
+  --color-brand-gold:       #CEB99A;
+  --color-brand-gold-dark:  #b8a080;
+  --color-brand-gold-light: #ddd0b8;
+  --color-brand-silver:     #C0C2C7;
+  --color-brand-white:      #F7F7F5;
+  --color-brand-graphite:   #2B2B2B;
+
+  /* ── Fonts ── */
+  --font-heading: "Cinzel", "Cormorant Garamond", serif;
+  --font-sub:     "Cormorant Garamond", serif;
+  --font-sans:    "Montserrat", "Inter", sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Montserrat", "Inter", sans-serif;
+  background-color: #F7F7F5;
+  color: #2B2B2B;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Brand utility classes ── */
+.font-heading {
+  font-family: "Cinzel", serif;
+  letter-spacing: 0.04em;
+}
+
+.font-sub {
+  font-family: "Cormorant Garamond", serif;
+}
+
+/* ── Gold gradient text ── */
+.gold-gradient {
+  background: linear-gradient(135deg, #CEB99A 0%, #e8d5b7 40%, #CEB99A 60%, #b8a080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #CEB99A 0%, #ddd0b8 50%, #b8a080 100%);
+}
+
+/* ── Navy gradient ── */
+.navy-gradient-bg {
+  background: linear-gradient(160deg, #12314D 0%, #0d2238 60%, #091929 100%);
+}
+
+/* ── Section divider ── */
+.brand-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-divider::before,
+.brand-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #CEB99A, transparent);
+}
+
+/* ── Animated underline for nav links ── */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: #CEB99A;
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* ── Gold button ── */
+.btn-gold {
+  background: linear-gradient(135deg, #CEB99A 0%, #b8a080 100%);
+  color: #12314D;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: all 0.3s ease;
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, #ddd0b8 0%, #CEB99A 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(206, 185, 154, 0.4);
+}
+
+/* ── Navy button ── */
+.btn-navy {
+  background: #12314D;
+  color: #F7F7F5;
+  border: 1.5px solid #12314D;
+  transition: all 0.3s ease;
+}
+.btn-navy:hover {
+  background: transparent;
+  color: #12314D;
+  border-color: #12314D;
+}
+
+/* ── Property card hover ── */
+.property-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(18, 49, 77, 0.12);
+}
+
+/* ── Service card hover ── */
+.service-card {
+  background: linear-gradient(160deg, #12314D 0%, #0d2238 100%);
+  transition: background 0.3s ease;
+}
+.service-card:hover {
+  background: linear-gradient(160deg, #1a3d5c 0%, #12314D 100%);
+}
+.service-card-line {
+  height: 1px;
+  width: 0;
+  background: linear-gradient(to right, #CEB99A, transparent);
+  transition: width 0.5s ease;
+}
+.service-card:hover .service-card-line {
+  width: 100%;
+}
+
+/* ── Social icon hover ── */
+.social-icon {
+  background: rgba(206, 185, 154, 0.10);
+  border: 1px solid rgba(206, 185, 154, 0.22);
+  color: rgba(206, 185, 154, 0.75);
+  transition: all 0.3s ease;
+}
+.social-icon:hover {
+  background: #CEB99A;
+  color: #12314D;
+  transform: scale(1.05);
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F7F7F5; }
+::-webkit-scrollbar-thumb { background: #CEB99A; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b8a080; }

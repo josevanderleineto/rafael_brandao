@@ -1,0 +1,99 @@
+export default function Hero() {
+  return (
+    <section
+      id="inicio"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden"
+    >
+      {/* Background */}
+      <img
+        src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+        alt="Imóvel residencial contemporâneo"
+        className="absolute inset-0 h-full w-full object-cover"
+        loading="eager"
+      />
+
+      {/* Overlay naval com gradiente */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(160deg, rgba(18,49,77,0.88) 0%, rgba(9,25,41,0.82) 60%, rgba(13,34,56,0.90) 100%)",
+        }}
+      />
+
+      {/* Linhas decorativas douradas */}
+      <div
+        className="absolute left-0 top-0 h-1 w-full"
+        style={{ background: "linear-gradient(to right, transparent, #CEB99A, transparent)" }}
+      />
+
+      <div className="relative z-10 mx-auto max-w-4xl px-4 py-32 text-center sm:px-6 lg:px-8">
+        {/* Eyebrow */}
+        <div className="brand-divider mx-auto mb-6 max-w-xs">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.28em] whitespace-nowrap"
+            style={{ color: "#CEB99A" }}
+          >
+            Soluções Imobiliárias na Bahia
+          </p>
+        </div>
+
+        {/* Heading */}
+        <h1
+          className="font-heading text-4xl font-semibold leading-tight tracking-wide sm:text-5xl lg:text-6xl"
+          style={{ color: "#F7F7F5" }}
+        >
+          Segurança para o seu imóvel.{" "}
+          <span style={{ color: "#CEB99A" }}>Tranquilidade</span>{" "}
+          para a sua vida.
+        </h1>
+
+        <p
+          className="mx-auto mt-7 max-w-2xl text-base leading-relaxed sm:text-lg"
+          style={{ color: "rgba(247,247,245,0.80)" }}
+        >
+          Administração, locação, vendas, avaliações e assessoria documental
+          conduzidas com ética, transparência e atenção a cada detalhe.
+        </p>
+
+        {/* Credenciais */}
+        <div className="mt-8 flex items-center justify-center gap-6">
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ color: "rgba(206,185,154,0.70)" }}
+          >
+            CRECI-BA 7691
+          </span>
+          <div className="h-3 w-px" style={{ background: "rgba(206,185,154,0.35)" }} />
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ color: "rgba(206,185,154,0.70)" }}
+          >
+            CNAI 47.907
+          </span>
+        </div>
+
+        {/* CTAs */}
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a
+            href="#imoveis"
+            className="btn-gold inline-flex w-full items-center justify-center rounded-sm px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.1em] sm:w-auto"
+          >
+            Ver Imóveis
+          </a>
+          <a
+            href="#contato"
+            className="inline-flex w-full items-center justify-center rounded-sm border px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.1em] transition-all hover:bg-white/10 sm:w-auto"
+            style={{ borderColor: "rgba(206,185,154,0.6)", color: "#F7F7F5" }}
+          >
+            Agendar Visita
+          </a>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-60">
+        <div className="h-10 w-px" style={{ background: "linear-gradient(to bottom, #CEB99A, transparent)" }} />
+      </div>
+    </section>
+  );
+}
