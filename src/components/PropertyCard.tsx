@@ -45,7 +45,7 @@ export default function PropertyCard({
           />
           {/* Badge */}
           <span
-            className="absolute left-4 top-4 z-10 rounded-sm px-3 py-1 text-xs font-bold uppercase tracking-wider"
+            className="absolute left-3 top-3 z-10 rounded-sm px-2.5 py-1 text-xs font-bold uppercase tracking-wider sm:left-4 sm:top-4 sm:px-3"
             style={{ background: bs.bg, color: bs.color }}
           >
             {badge}
@@ -53,10 +53,10 @@ export default function PropertyCard({
           {/* Gallery count */}
           {extraPhotos > 0 && (
             <span
-              className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm"
+              className="absolute bottom-2 right-2 z-10 inline-flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm sm:bottom-3 sm:right-3 sm:gap-1.5 sm:px-2.5"
               style={{ background: "rgba(18,49,77,0.75)" }}
             >
-              <Camera className="h-3.5 w-3.5" />
+              <Camera className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               +{extraPhotos}
             </span>
           )}
@@ -68,7 +68,7 @@ export default function PropertyCard({
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           <p
             className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: "#CEB99A" }}
@@ -76,37 +76,38 @@ export default function PropertyCard({
             {type}
           </p>
           <h3
-            className="font-heading mt-1 text-base font-semibold leading-snug"
+            className="font-heading mt-1 text-sm font-semibold leading-snug sm:text-base"
             style={{ color: "#12314D" }}
           >
             {title}
           </h3>
-          <p className="mt-1.5 inline-flex items-center gap-1 text-xs" style={{ color: "#4a4a4a" }}>
-            <MapPin className="h-3 w-3" style={{ color: "#CEB99A" }} />
+          <p className="mt-1 inline-flex items-center gap-1 text-xs" style={{ color: "#4a4a4a" }}>
+            <MapPin className="h-3 w-3 shrink-0" style={{ color: "#CEB99A" }} />
             {neighborhood}, {city}
           </p>
 
           <p
-            className="font-heading mt-3 text-xl font-semibold"
+            className="font-heading mt-2.5 text-lg font-semibold sm:mt-3 sm:text-xl"
             style={{ color: "#12314D" }}
           >
             {price}
           </p>
 
+          {/* Stats — wrap em telas muito pequenas */}
           <div
-            className="mt-4 flex items-center gap-4 border-t pt-4 text-xs"
+            className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t pt-3 text-xs sm:mt-4 sm:gap-4 sm:pt-4"
             style={{ borderColor: "rgba(18,49,77,0.10)", color: "#4a4a4a" }}
           >
-            <span className="inline-flex items-center gap-1.5">
-              <BedDouble className="h-3.5 w-3.5" style={{ color: "#CEB99A" }} />
-              {beds} Quartos
+            <span className="inline-flex items-center gap-1 sm:gap-1.5">
+              <BedDouble className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: "#CEB99A" }} />
+              {beds} Qtos
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Bath className="h-3.5 w-3.5" style={{ color: "#CEB99A" }} />
-              {baths} Banheiros
+            <span className="inline-flex items-center gap-1 sm:gap-1.5">
+              <Bath className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: "#CEB99A" }} />
+              {baths} Banh
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Maximize className="h-3.5 w-3.5" style={{ color: "#CEB99A" }} />
+            <span className="inline-flex items-center gap-1 sm:gap-1.5">
+              <Maximize className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: "#CEB99A" }} />
               {area} m²
             </span>
           </div>

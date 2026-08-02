@@ -363,34 +363,34 @@ export default function PropertyDetailClient({ property }: { property: Property 
             </div>
 
             {/* Destaques de Características */}
-            <div className="grid grid-cols-3 gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/80">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                  <BedDouble className="h-6 w-6" />
+            <div className="grid grid-cols-3 gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/80 sm:gap-4 sm:p-6">
+              <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11">
+                  <BedDouble className="h-4 w-4 sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                  <p className="text-xl font-bold text-slate-900">{beds}</p>
-                  <p className="text-xs font-medium text-slate-500">Quartos</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                  <Bath className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-slate-900">{baths}</p>
-                  <p className="text-xs font-medium text-slate-500">Banheiros</p>
+                <div className="text-center sm:text-left">
+                  <p className="text-lg font-bold text-slate-900 sm:text-xl">{beds}</p>
+                  <p className="text-[10px] font-medium text-slate-500 sm:text-xs">Quartos</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                  <Maximize className="h-6 w-6" />
+              <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11">
+                  <Bath className="h-4 w-4 sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                  <p className="text-xl font-bold text-slate-900">{area}</p>
-                  <p className="text-xs font-medium text-slate-500">m² de área</p>
+                <div className="text-center sm:text-left">
+                  <p className="text-lg font-bold text-slate-900 sm:text-xl">{baths}</p>
+                  <p className="text-[10px] font-medium text-slate-500 sm:text-xs">Banheiros</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11">
+                  <Maximize className="h-4 w-4 sm:h-6 sm:w-6" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <p className="text-lg font-bold text-slate-900 sm:text-xl">{area}</p>
+                  <p className="text-[10px] font-medium text-slate-500 sm:text-xs">m² de área</p>
                 </div>
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function PropertyDetailClient({ property }: { property: Property 
 
           {/* Sidebar de Valor e Contato */}
           <aside>
-            <div className="sticky top-24 rounded-2xl bg-white p-6 sm:p-7 shadow-md ring-1 ring-slate-200/80">
+            <div className="rounded-2xl bg-white p-5 shadow-md ring-1 ring-slate-200/80 sm:p-7 lg:sticky lg:top-24">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600">
                 Valor do investimento
               </span>

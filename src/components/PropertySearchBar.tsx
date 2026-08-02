@@ -37,7 +37,7 @@ export default function PropertySearchBar({
   const active = hasActiveFilters(filters);
 
   const selectClass =
-    "rounded-sm border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2";
+    "w-full rounded-sm border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2";
   const selectStyle = {
     borderColor: "rgba(18,49,77,0.18)",
     color: "#2B2B2B",
@@ -62,8 +62,8 @@ export default function PropertySearchBar({
           type="search"
           value={filters.query}
           onChange={(e) => updateFilter("query", e.target.value)}
-          placeholder="Buscar por bairro, cidade ou tipo de imóvel..."
-          className="w-full rounded-sm border py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2"
+          placeholder="Buscar por bairro ou tipo..."
+          className="w-full rounded-sm border py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 sm:py-3.5"
           style={{
             borderColor: "rgba(18,49,77,0.18)",
             color: "#2B2B2B",
@@ -83,8 +83,8 @@ export default function PropertySearchBar({
         Filtros
       </div>
 
-      {/* Selects */}
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Selects — 2x2 grid on mobile, 4 cols on desktop */}
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <label className="flex flex-col gap-1.5">
           <span
             className="text-xs font-semibold uppercase tracking-wide"

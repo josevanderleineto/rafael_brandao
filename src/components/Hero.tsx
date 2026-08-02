@@ -20,17 +20,17 @@ export default function Hero() {
         }}
       />
 
-      {/* Linhas decorativas douradas */}
+      {/* Linha decorativa dourada */}
       <div
         className="absolute left-0 top-0 h-1 w-full"
         style={{ background: "linear-gradient(to right, transparent, #CEB99A, transparent)" }}
       />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-4 py-32 text-center sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 py-28 text-center sm:px-6 sm:py-36 lg:px-8">
         {/* Eyebrow */}
-        <div className="brand-divider mx-auto mb-6 max-w-xs">
+        <div className="brand-divider mx-auto mb-5 max-w-[260px] sm:max-w-xs">
           <p
-            className="text-xs font-semibold uppercase tracking-[0.28em] whitespace-nowrap"
+            className="text-[10px] font-semibold uppercase tracking-[0.22em] sm:text-xs sm:tracking-[0.28em]"
             style={{ color: "#CEB99A" }}
           >
             Soluções Imobiliárias na Bahia
@@ -39,7 +39,7 @@ export default function Hero() {
 
         {/* Heading */}
         <h1
-          className="font-heading text-4xl font-semibold leading-tight tracking-wide sm:text-5xl lg:text-6xl"
+          className="font-heading text-3xl font-semibold leading-tight tracking-wide sm:text-5xl lg:text-6xl"
           style={{ color: "#F7F7F5" }}
         >
           Segurança para o seu imóvel.{" "}
@@ -48,7 +48,7 @@ export default function Hero() {
         </h1>
 
         <p
-          className="mx-auto mt-7 max-w-2xl text-base leading-relaxed sm:text-lg"
+          className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed sm:mt-7 sm:text-base sm:text-lg"
           style={{ color: "rgba(247,247,245,0.80)" }}
         >
           Administração, locação, vendas, avaliações e assessoria documental
@@ -56,16 +56,16 @@ export default function Hero() {
         </p>
 
         {/* Credenciais */}
-        <div className="mt-8 flex items-center justify-center gap-6">
+        <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
           <span
-            className="text-xs font-medium uppercase tracking-widest"
+            className="text-[10px] font-medium uppercase tracking-widest sm:text-xs"
             style={{ color: "rgba(206,185,154,0.70)" }}
           >
             CRECI-BA 7691
           </span>
           <div className="h-3 w-px" style={{ background: "rgba(206,185,154,0.35)" }} />
           <span
-            className="text-xs font-medium uppercase tracking-widest"
+            className="text-[10px] font-medium uppercase tracking-widest sm:text-xs"
             style={{ color: "rgba(206,185,154,0.70)" }}
           >
             CNAI 47.907
@@ -73,7 +73,7 @@ export default function Hero() {
         </div>
 
         {/* CTAs */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
           <a
             href="#imoveis"
             className="btn-gold inline-flex w-full items-center justify-center rounded-sm px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.1em] sm:w-auto"
