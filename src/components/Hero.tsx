@@ -67,7 +67,7 @@ export default function Hero() {
               backdropFilter: "blur(4px)",
             }}
           >
-            🔑 Aluga (Locação)
+            🔑 Locação
           </span>
           <span
             className="inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider"
@@ -78,7 +78,7 @@ export default function Hero() {
               backdropFilter: "blur(4px)",
             }}
           >
-            🏠 Vende (Vendas)
+            🏠 Vendas
           </span>
           <span
             className="inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider"
@@ -89,7 +89,7 @@ export default function Hero() {
               backdropFilter: "blur(4px)",
             }}
           >
-            🏢 Administra Imóveis
+            🏢 Administração
           </span>
           <span
             className="inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider"
