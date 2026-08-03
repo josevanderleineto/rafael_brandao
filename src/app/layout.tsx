@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Rafael Brandão | Desenvolvimento Imobiliário",
   description:
     "Locação, administração, vendas, avaliações e assessoria imobiliária em Salvador, Região Metropolitana e Litoral Norte da Bahia. CRECI-BA 7691 | CNAI 47.907.",
+  icons: {
+    icon: "/rafael-logo.svg",
+    shortcut: "/rafael-logo.svg",
+    apple: "/rafael-logo.svg",
+  },
 };
 
 export default function RootLayout({
