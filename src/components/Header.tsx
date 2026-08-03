@@ -38,14 +38,32 @@ export default function Header() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
           {/* ── Logo ── */}
-          <a href="#inicio" className="flex items-center gap-2 group" aria-label="Rafael Brandão Imóveis - Início">
+          <a href="#inicio" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário - Início">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/rafael-logo.svg"
-              alt="Rafael Brandão Desenvolvimento Imobiliário"
+              alt="Rafael Brandão Logo"
               className="shrink-0 transition-transform duration-300 group-hover:scale-105"
-              style={{ width: "clamp(60px, 10vw, 88px)", height: "auto" }}
+              style={{ width: "clamp(38px, 6vw, 48px)", height: "auto" }}
             />
+            <div className="flex flex-col text-left justify-center">
+              <span
+                className="font-heading text-xs sm:text-sm font-bold uppercase tracking-[0.16em] leading-tight"
+                style={{ color: "#F7F7F5" }}
+              >
+                RAFAEL BRANDÃO
+              </span>
+              <div
+                className="my-0.5 h-px w-full"
+                style={{ background: "linear-gradient(to right, #CEB99A 0%, rgba(206,185,154,0.3) 100%)" }}
+              />
+              <span
+                className="text-[8px] sm:text-[9.5px] font-semibold uppercase tracking-[0.18em] leading-tight"
+                style={{ color: "#CEB99A" }}
+              >
+                DESENVOLVIMENTO IMOBILIÁRIO
+              </span>
+            </div>
           </a>
 
           {/* ── Desktop Nav ── */}

@@ -59,16 +59,34 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top row — logo + socials */}
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="flex items-center">
+          <a href="#inicio" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/rafael-logo.svg"
-              alt="Rafael Brandão Desenvolvimento Imobiliário"
-              width={66}
-              height={55}
-              className="shrink-0"
+              alt="Rafael Brandão Logo"
+              width={42}
+              height={35}
+              className="shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
-          </div>
+            <div className="flex flex-col text-left justify-center">
+              <span
+                className="font-heading text-xs sm:text-sm font-bold uppercase tracking-[0.16em] leading-tight"
+                style={{ color: "#F7F7F5" }}
+              >
+                RAFAEL BRANDÃO
+              </span>
+              <div
+                className="my-0.5 h-px w-full"
+                style={{ background: "linear-gradient(to right, #CEB99A 0%, rgba(206,185,154,0.3) 100%)" }}
+              />
+              <span
+                className="text-[8px] sm:text-[9.5px] font-semibold uppercase tracking-[0.18em] leading-tight"
+                style={{ color: "#CEB99A" }}
+              >
+                DESENVOLVIMENTO IMOBILIÁRIO
+              </span>
+            </div>
+          </a>
 
           {/* Socials */}
           <div className="flex items-center gap-3">
