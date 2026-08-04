@@ -1,12 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { Check, LogOut, Pencil, Plus, Trash2 } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Check, LogOut, Pencil, Play, Plus, Trash2, Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { propertyBadges, propertyTypes, type Property } from "@/lib/data";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type FormProperty = Omit<Property, "id" | "price" | "description" | "photos" | "videoUrl"> & {
   description: string;
-  photosText: string; // uma URL por linha
+  photos: string[];   // URLs finais (pós-upload)
   videoUrl: string;
 };
 
@@ -23,20 +25,24 @@ const emptyProperty: FormProperty = {
   area: 0,
   featured: false,
   description: "",
-  photosText: "",
+  photos: [],
   videoUrl: "",
 };
 
-function formToPayload(form: FormProperty) {
-  return {
-    ...form,
-    photos: form.photosText
-      .split("\n")
-      .map((u) => u.trim())
-      .filter(Boolean),
-    photosText: undefined,
-  };
+// ─── Upload helper ────────────────────────────────────────────────────────────
+
+async function uploadFile(file: File): Promise<{ url: string; type: string }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(err.error ?? "Erro ao fazer upload.");
+  }
+  return res.json() as Promise<{ url: string; type: string }>;
 }
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -46,6 +52,12 @@ export default function AdminPage() {
   const [form, setForm] = useState<FormProperty>(emptyProperty);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
+  const [msgType, setMsgType] = useState<"ok" | "err">("ok");
+
+  // Upload states
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   async function loadProperties() {
     const response = await fetch("/api/properties");
@@ -61,38 +73,94 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-    if (!response.ok) return setMessage("Usuário ou senha inválidos.");
-    setAuthenticated(true); setMessage("");
+    if (!response.ok) return notify("Usuário ou senha inválidos.", "err");
+    setAuthenticated(true);
+    setMessage("");
+  }
+
+  function notify(msg: string, type: "ok" | "err" = "ok") {
+    setMessage(msg);
+    setMsgType(type);
   }
 
   function change<K extends keyof FormProperty>(key: K, value: FormProperty[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
+  // ── Cover image upload ─────────────────────────────────────────────────────
+
+  async function handleCoverFile(file: File) {
+    setUploadingCover(true);
+    try {
+      const { url } = await uploadFile(file);
+      change("image", url);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : "Erro ao enviar capa.", "err");
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
+  // ── Additional photos upload ───────────────────────────────────────────────
+
+  async function handleAdditionalFiles(files: File[]) {
+    if (!files.length) return;
+    setUploadingPhotos(true);
+    try {
+      const results = await Promise.all(files.map(uploadFile));
+      change("photos", [...form.photos, ...results.map((r) => r.url)]);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : "Erro ao enviar fotos.", "err");
+    } finally {
+      setUploadingPhotos(false);
+    }
+  }
+
+  // ── Video upload ───────────────────────────────────────────────────────────
+
+  async function handleVideoFile(file: File) {
+    setUploadingVideo(true);
+    try {
+      const { url } = await uploadFile(file);
+      change("videoUrl", url);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : "Erro ao enviar vídeo.", "err");
+    } finally {
+      setUploadingVideo(false);
+    }
+  }
+
+  function removePhoto(index: number) {
+    change("photos", form.photos.filter((_, i) => i !== index));
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+
   async function save(event: FormEvent) {
-    event.preventDefault(); setMessage("");
-    const payload = formToPayload(form);
+    event.preventDefault();
+    setMessage("");
     const response = await fetch(
       editingId ? `/api/properties/${editingId}` : "/api/properties",
       {
         method: editingId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(form),
       }
     );
     const result = await response.json().catch(() => null);
-    if (!response.ok) return setMessage(result?.error || "Não foi possível salvar.");
+    if (!response.ok) return notify(result?.error || "Não foi possível salvar.", "err");
     await loadProperties();
     setForm(emptyProperty);
     setEditingId(null);
-    setMessage("Imóvel salvo com sucesso.");
+    notify("Imóvel salvo com sucesso.");
   }
 
   async function remove(id: number) {
     if (!window.confirm("Remover este imóvel do site?")) return;
     const response = await fetch(`/api/properties/${id}`, { method: "DELETE" });
-    if (!response.ok) return setMessage("Não foi possível remover.");
-    await loadProperties(); setMessage("Imóvel removido.");
+    if (!response.ok) return notify("Não foi possível remover.", "err");
+    await loadProperties();
+    notify("Imóvel removido.");
   }
 
   function edit(property: Property) {
@@ -110,7 +178,7 @@ export default function AdminPage() {
       area: property.area,
       featured: Boolean(property.featured),
       description: property.description ?? "",
-      photosText: (property.photos ?? []).join("\n"),
+      photos: property.photos ?? [],
       videoUrl: property.videoUrl ?? "",
     });
     setMessage("");
@@ -119,7 +187,8 @@ export default function AdminPage() {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    setAuthenticated(false); setPassword("");
+    setAuthenticated(false);
+    setPassword("");
   }
 
   if (!authenticated) {
@@ -134,6 +203,8 @@ export default function AdminPage() {
       />
     );
   }
+
+  const uploading = uploadingCover || uploadingPhotos || uploadingVideo;
 
   return (
     <main className="min-h-screen bg-slate-100 pb-16">
@@ -185,37 +256,41 @@ export default function AdminPage() {
             <Field label="Área (m²)" type="number" value={form.area} onChange={(v) => change("area", Number(v))} min="0" required />
             <Field label="Quartos" type="number" value={form.beds} onChange={(v) => change("beds", Number(v))} min="0" required />
             <Field label="Banheiros" type="number" value={form.baths} onChange={(v) => change("baths", Number(v))} min="0" required />
-            <Field label="URL da imagem principal (capa)" value={form.image} onChange={(v) => change("image", v)} className="sm:col-span-2" required />
+
+            {/* Imagem de capa */}
+            <div className="sm:col-span-2">
+              <span className="text-sm font-medium text-slate-700">Foto de capa</span>
+              <ImageUploadBox
+                url={form.image}
+                uploading={uploadingCover}
+                label="Clique ou arraste a foto de capa"
+                onFile={handleCoverFile}
+                onUrlChange={(v) => change("image", v)}
+                required
+              />
+            </div>
 
             {/* Fotos adicionais */}
-            <label className="sm:col-span-2">
-              <span className="text-sm font-medium text-slate-700">Fotos adicionais (uma URL por linha)</span>
-              <textarea
-                value={form.photosText}
-                onChange={(e) => change("photosText", e.target.value)}
-                rows={4}
-                placeholder={"https://exemplo.com/foto1.jpg\nhttps://exemplo.com/foto2.jpg"}
-                className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 font-mono text-sm outline-none focus:border-amber-600"
+            <div className="sm:col-span-2">
+              <span className="text-sm font-medium text-slate-700">Fotos adicionais da galeria</span>
+              <MultiImageUpload
+                photos={form.photos}
+                uploading={uploadingPhotos}
+                onFiles={handleAdditionalFiles}
+                onRemove={removePhoto}
               />
-              <p className="mt-1 text-xs text-slate-400">
-                Cole uma URL por linha. Essas fotos aparecerão na galeria da página do imóvel.
-              </p>
-            </label>
+            </div>
 
-            {/* URL do vídeo */}
-            <label className="sm:col-span-2">
-              <span className="text-sm font-medium text-slate-700">URL do vídeo do imóvel (YouTube / Vimeo)</span>
-              <input
-                type="text"
-                value={form.videoUrl}
-                onChange={(e) => change("videoUrl", e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=SEU_VIDEO ou https://youtu.be/SEU_VIDEO"
-                className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-amber-600"
+            {/* Vídeo */}
+            <div className="sm:col-span-2">
+              <span className="text-sm font-medium text-slate-700">Vídeo do imóvel</span>
+              <VideoUpload
+                url={form.videoUrl}
+                uploading={uploadingVideo}
+                onFile={handleVideoFile}
+                onUrlChange={(v) => change("videoUrl", v)}
               />
-              <p className="mt-1 text-xs text-slate-400">
-                Pode colar qualquer link do YouTube (ex: <code>https://www.youtube.com/watch?v=...</code> ou <code>https://youtu.be/...</code>). O sistema converte automaticamente para o player.
-              </p>
-            </label>
+            </div>
 
             {/* Descrição */}
             <label className="sm:col-span-2">
@@ -240,12 +315,17 @@ export default function AdminPage() {
             </label>
 
             {message && (
-              <p className="sm:col-span-2 text-sm font-medium text-emerald-700">{message}</p>
+              <p className={`sm:col-span-2 text-sm font-medium ${msgType === "err" ? "text-red-600" : "text-emerald-700"}`}>
+                {message}
+              </p>
             )}
 
-            <button className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-5 py-3.5 font-semibold text-white hover:bg-amber-700">
-              <Check className="h-4 w-4" />
-              {editingId ? "Salvar alterações" : "Publicar imóvel"}
+            <button
+              disabled={uploading}
+              className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-5 py-3.5 font-semibold text-white hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {uploading ? "Enviando fotos…" : editingId ? "Salvar alterações" : "Publicar imóvel"}
             </button>
           </form>
         </section>
@@ -263,6 +343,7 @@ export default function AdminPage() {
           <div className="space-y-3">
             {properties.map((property) => (
               <article key={property.id} className="flex gap-4 rounded-xl bg-white p-4 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={property.image} alt="" className="h-20 w-24 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-slate-900">{property.title}</p>
@@ -312,7 +393,307 @@ export default function AdminPage() {
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── ImageUploadBox ────────────────────────────────────────────────────────────
+// Single image upload with preview and URL fallback
+
+function ImageUploadBox({
+  url, uploading, label, onFile, onUrlChange, required,
+}: {
+  url: string;
+  uploading: boolean;
+  label: string;
+  onFile: (f: File) => void;
+  onUrlChange: (v: string) => void;
+  required?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [showUrlField, setShowUrlField] = useState(false);
+
+  function pick(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    onFile(file);
+  }
+
+  return (
+    <div className="mt-1.5">
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setDragging(false);
+          const file = e.dataTransfer.files[0];
+          if (file) pick(file);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={`relative flex min-h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors
+          ${dragging ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50 hover:border-amber-400 hover:bg-amber-50/40"}`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          required={required && !url}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) pick(file);
+          }}
+        />
+
+        {uploading ? (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+            <p className="text-sm font-medium text-amber-600">Enviando…</p>
+          </>
+        ) : url ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt="Capa" className="h-32 w-full rounded-lg object-cover" />
+            <p className="absolute bottom-2 right-2 rounded-md bg-black/60 px-2 py-0.5 text-xs text-white">
+              Clique para trocar
+            </p>
+          </>
+        ) : (
+          <>
+            <Upload className="h-8 w-8 text-slate-400" />
+            <p className="text-sm font-medium text-slate-600">{label}</p>
+            <p className="text-xs text-slate-400">PNG, JPG, WEBP • máx. 10 MB</p>
+          </>
+        )}
+      </div>
+
+      {/* URL fallback toggle */}
+      <button
+        type="button"
+        onClick={() => setShowUrlField((v) => !v)}
+        className="mt-1.5 text-xs text-slate-400 underline-offset-2 hover:text-amber-600 hover:underline"
+      >
+        {showUrlField ? "Ocultar campo de URL" : "Ou cole uma URL de imagem"}
+      </button>
+      {showUrlField && (
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => onUrlChange(e.target.value)}
+          placeholder="https://..."
+          className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-amber-600"
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── MultiImageUpload ─────────────────────────────────────────────────────────
+// Multiple image upload with thumbnails grid
+
+function MultiImageUpload({
+  photos, uploading, onFiles, onRemove,
+}: {
+  photos: string[];
+  uploading: boolean;
+  onFiles: (files: File[]) => void;
+  onRemove: (index: number) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  function pick(fileList: FileList | null) {
+    if (!fileList) return;
+    const valid = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    if (valid.length) onFiles(valid);
+  }
+
+  return (
+    <div className="mt-1.5">
+      {/* Thumbnails */}
+      {photos.length > 0 && (
+        <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {photos.map((url, i) => (
+            <div key={url + i} className="group relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="aspect-square w-full rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={() => onRemove(i)}
+                className="absolute right-1 top-1 hidden rounded-full bg-red-600 p-0.5 text-white group-hover:flex"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setDragging(false);
+          pick(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={`flex min-h-[100px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors
+          ${dragging ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50 hover:border-amber-400 hover:bg-amber-50/40"}`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="sr-only"
+          onChange={(e) => pick(e.target.files)}
+        />
+        {uploading ? (
+          <>
+            <Loader2 className="h-7 w-7 animate-spin text-amber-500" />
+            <p className="text-sm font-medium text-amber-600">Enviando fotos…</p>
+          </>
+        ) : (
+          <>
+            <ImageIcon className="h-7 w-7 text-slate-400" />
+            <p className="text-sm font-medium text-slate-600">
+              {photos.length > 0 ? "Adicionar mais fotos" : "Clique ou arraste fotos da galeria"}
+            </p>
+            <p className="text-xs text-slate-400">Selecione várias de uma vez • PNG, JPG, WEBP • máx. 10 MB cada</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── VideoUpload ──────────────────────────────────────────────────────────────
+// Upload direto de vídeo com preview HTML5 + fallback de URL YouTube/Vimeo
+
+function VideoUpload({
+  url, uploading, onFile, onUrlChange,
+}: {
+  url: string;
+  uploading: boolean;
+  onFile: (f: File) => void;
+  onUrlChange: (v: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [showUrlField, setShowUrlField] = useState(false);
+
+  // Detecta se é URL direta de vídeo (Cloudinary) ou link externo (YouTube/Vimeo)
+  const isDirectVideo = url
+    ? url.startsWith("https://res.cloudinary.com") || /\.(mp4|webm|mov|avi)(\?|$)/i.test(url)
+    : false;
+
+  function pick(file: File) {
+    if (!file.type.startsWith("video/")) return;
+    onFile(file);
+  }
+
+  return (
+    <div className="mt-1.5">
+      {/* Drop zone / Preview */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setDragging(false);
+          const file = e.dataTransfer.files[0];
+          if (file) pick(file);
+        }}
+        onClick={() => !url && inputRef.current?.click()}
+        className={`relative flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors
+          ${url ? "cursor-default border-slate-200 bg-slate-50" : "cursor-pointer " + (dragging ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50 hover:border-amber-400 hover:bg-amber-50/40")}`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="video/*"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) pick(file);
+          }}
+        />
+
+        {uploading ? (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+            <p className="text-sm font-medium text-amber-600">Enviando vídeo…</p>
+            <p className="text-xs text-slate-400">Pode demorar alguns segundos</p>
+          </>
+        ) : url && isDirectVideo ? (
+          /* Preview de vídeo direto (Cloudinary) */
+          <div className="w-full px-2 pb-2 pt-2">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video
+              src={url}
+              controls
+              className="w-full rounded-lg"
+              style={{ maxHeight: 220 }}
+            />
+            <div className="mt-2 flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+              >
+                Trocar vídeo
+              </button>
+              <button
+                type="button"
+                onClick={() => onUrlChange("")}
+                className="rounded-md bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+              >
+                Remover
+              </button>
+            </div>
+          </div>
+        ) : url && !isDirectVideo ? (
+          /* Link externo (YouTube/Vimeo) — mostra ícone + texto */
+          <div className="flex flex-col items-center gap-2 p-4">
+            <Play className="h-10 w-10 text-amber-500" />
+            <p className="text-sm font-semibold text-slate-700">Vídeo externo configurado</p>
+            <p className="max-w-xs truncate text-xs text-slate-400">{url}</p>
+            <button
+              type="button"
+              onClick={() => onUrlChange("")}
+              className="mt-1 rounded-md bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+            >
+              Remover
+            </button>
+          </div>
+        ) : (
+          /* Estado vazio */
+          <>
+            <Upload className="h-8 w-8 text-slate-400" />
+            <p className="text-sm font-medium text-slate-600">Clique ou arraste um vídeo</p>
+            <p className="text-xs text-slate-400">MP4, MOV, WEBM • máx. 200 MB</p>
+          </>
+        )}
+      </div>
+
+      {/* Fallback: link YouTube / Vimeo */}
+      <button
+        type="button"
+        onClick={() => setShowUrlField((v) => !v)}
+        className="mt-1.5 text-xs text-slate-400 underline-offset-2 hover:text-amber-600 hover:underline"
+      >
+        {showUrlField ? "Ocultar campo de URL" : "Ou cole um link do YouTube / Vimeo"}
+      </button>
+      {showUrlField && (
+        <input
+          type="url"
+          value={isDirectVideo ? "" : url}
+          onChange={(e) => onUrlChange(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
+          className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-amber-600"
+        />
+      )}
+    </div>
+  );
+}
+
 
 function LoginScreen({
   username, password, message, onUsername, onPassword, onSubmit,
