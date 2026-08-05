@@ -1,5 +1,11 @@
 import { MessageCircle } from "lucide-react";
 import { siteData } from "@/lib/data";
+import type { SiteContent } from "@/lib/site-content-defaults";
+import { defaultSiteContent } from "@/lib/site-content-defaults";
+
+function c(content: SiteContent, key: string): string {
+  return content[key] ?? defaultSiteContent[key] ?? "";
+}
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -41,13 +47,18 @@ function LinkedinIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
-  { label: "Instagram", href: "https://instagram.com", icon: InstagramIcon },
-  { label: "LinkedIn",  href: "https://linkedin.com",  icon: LinkedinIcon   },
-  { label: "WhatsApp",  href: siteData.whatsappUrl,    icon: MessageCircle  },
-];
+export default function Footer({ content = {} }: { content?: SiteContent }) {
+  const copyright = c(content, "footer.copyright");
+  const instagramHref = c(content, "footer.instagram") || "https://instagram.com";
+  const linkedinHref = c(content, "footer.linkedin") || "https://linkedin.com";
+  const whatsappHref = siteData.whatsappUrl;
 
-export default function Footer() {
+  const socialLinks = [
+    { label: "Instagram", href: instagramHref, icon: InstagramIcon },
+    { label: "LinkedIn",  href: linkedinHref,  icon: LinkedinIcon },
+    { label: "WhatsApp",  href: whatsappHref,   icon: MessageCircle },
+  ];
+
   return (
     <footer
       className="border-t py-10"
@@ -114,7 +125,7 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
           <p className="text-xs" style={{ color: "rgba(247,247,245,0.45)" }}>
-            © 2026 Rafael Brandão · Desenvolvimento Imobiliário. Todos os direitos reservados.
+            {copyright}
           </p>
           <p className="text-xs" style={{ color: "rgba(247,247,245,0.35)" }}>
             CRECI-BA {siteData.creci} · CNAI 47.907 · Desenvolvido por{" "}

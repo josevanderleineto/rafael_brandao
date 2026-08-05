@@ -5,19 +5,22 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
+import { getSiteContent } from "@/lib/site-content-store";
 
-export default function Home() {
+export default async function Home() {
+  const content = await getSiteContent();
+
   return (
     <>
       <Header />
       <main>
-        <Hero />
+        <Hero content={content} />
         <FeaturedProperties />
-        <Services />
-        <About />
+        <Services content={content} />
+        <About content={content} />
         <Contact />
       </main>
-      <Footer />
+      <Footer content={content} />
     </>
   );
 }
