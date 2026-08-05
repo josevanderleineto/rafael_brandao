@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache, revalidateTag } from "next/cache";
 import { neon } from "@neondatabase/serverless";
 import { defaultSiteContent, type SiteContent } from "./site-content-defaults";
 
@@ -29,27 +30,35 @@ async function ensureTable() {
   `;
 }
 
+// ─── Cache tag ────────────────────────────────────────────────────────────────
+
+const CACHE_TAG = "site-content";
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-/** Returns merged content: defaults overridden by DB values */
-export async function getSiteContent(): Promise<SiteContent> {
-  try {
-    await ensureTable();
-    const sql = database();
-    const rows = (await sql`SELECT key, value FROM site_content`) as {
-      key: string;
-      value: string;
-    }[];
-    const dbContent: SiteContent = {};
-    for (const row of rows) dbContent[row.key] = row.value;
-    return { ...defaultSiteContent, ...dbContent };
-  } catch (error) {
-    console.warn("getSiteContent failed, using defaults:", error);
-    return { ...defaultSiteContent };
-  }
-}
+/** Returns merged content: defaults overridden by DB values (cached 60s) */
+export const getSiteContent = unstable_cache(
+  async (): Promise<SiteContent> => {
+    try {
+      await ensureTable();
+      const sql = database();
+      const rows = (await sql`SELECT key, value FROM site_content`) as {
+        key: string;
+        value: string;
+      }[];
+      const dbContent: SiteContent = {};
+      for (const row of rows) dbContent[row.key] = row.value;
+      return { ...defaultSiteContent, ...dbContent };
+    } catch (error) {
+      console.warn("getSiteContent failed, using defaults:", error);
+      return { ...defaultSiteContent };
+    }
+  },
+  [CACHE_TAG],
+  { revalidate: 60, tags: [CACHE_TAG] }
+);
 
-/** Upsert a batch of key/value pairs */
+/** Upsert a batch of key/value pairs and invalidate the cache */
 export async function updateSiteContentBatch(
   updates: Record<string, string>
 ): Promise<void> {
@@ -62,4 +71,7 @@ export async function updateSiteContentBatch(
       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
     `;
   }
+  // Invalida o cache imediatamente após salvar
+  revalidateTag(CACHE_TAG);
 }
+
