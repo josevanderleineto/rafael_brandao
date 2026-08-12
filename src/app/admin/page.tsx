@@ -52,14 +52,44 @@ async function deleteCloudinaryUrls(urls: string[]) {
 // ─── Upload helper ────────────────────────────────────────────────────────────
 
 async function uploadFile(file: File): Promise<{ url: string; type: string }> {
+  // 1. Get signed credentials from Next.js server API
+  const sigRes = await fetch("/api/upload", { method: "GET" });
+  if (!sigRes.ok) {
+    // If GET fails, try server POST fallback for smaller files
+    const fdFallback = new FormData();
+    fdFallback.append("file", file);
+    const resFallback = await fetch("/api/upload", { method: "POST", body: fdFallback });
+    if (!resFallback.ok) {
+      const err = await resFallback.json().catch(() => ({})) as { error?: string };
+      throw new Error(err.error ?? "Erro ao obter autorização de upload.");
+    }
+    return resFallback.json() as Promise<{ url: string; type: string }>;
+  }
+
+  const { uploadUrl, apiKey, timestamp, signature, folder } = (await sigRes.json()) as {
+    uploadUrl: string;
+    apiKey: string;
+    timestamp: string;
+    signature: string;
+    folder: string;
+  };
+
+  // 2. Upload file directly from browser to Cloudinary (bypasses Vercel 4.5MB limit)
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: fd });
+  fd.append("api_key", apiKey);
+  fd.append("timestamp", timestamp);
+  fd.append("signature", signature);
+  fd.append("folder", folder);
+
+  const res = await fetch(uploadUrl, { method: "POST", body: fd });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({})) as { error?: string };
-    throw new Error(err.error ?? "Erro ao fazer upload.");
+    const err = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+    throw new Error(err?.error?.message ?? "Erro ao fazer upload para o Cloudinary.");
   }
-  return res.json() as Promise<{ url: string; type: string }>;
+
+  const result = (await res.json()) as { secure_url: string; resource_type: string };
+  return { url: result.secure_url, type: result.resource_type };
 }
 
 // ─── Main Page ───────────────────────────────────────────────────────────────

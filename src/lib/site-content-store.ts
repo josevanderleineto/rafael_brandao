@@ -72,6 +72,6 @@ export async function updateSiteContentBatch(
     `;
   }
   // Invalida o cache imediatamente após salvar
-  revalidateTag(CACHE_TAG);
+  revalidateTag(CACHE_TAG, "max");
 }
 
