@@ -6,6 +6,8 @@ export type PropertyFilters = {
   type: PropertyType | "Todos";
   minBeds: number;
   maxPrice: number | null;
+  city: string;
+  neighborhood: string;
 };
 
 export const defaultFilters: PropertyFilters = {
@@ -14,6 +16,8 @@ export const defaultFilters: PropertyFilters = {
   type: "Todos",
   minBeds: 0,
   maxPrice: null,
+  city: "Todas",
+  neighborhood: "Todos",
 };
 
 export const priceFilterOptions = [
@@ -54,6 +58,17 @@ export function filterProperties(
       return false;
     }
 
+    if (filters.city !== "Todas" && normalizeText(property.city) !== normalizeText(filters.city)) {
+      return false;
+    }
+
+    if (
+      filters.neighborhood !== "Todos" &&
+      normalizeText(property.neighborhood) !== normalizeText(filters.neighborhood)
+    ) {
+      return false;
+    }
+
     if (filters.badge !== "Todos" && property.badge !== filters.badge) {
       return false;
     }
@@ -87,6 +102,8 @@ export function filterProperties(
 export function hasActiveFilters(filters: PropertyFilters) {
   return (
     filters.query.trim() !== "" ||
+    filters.city !== "Todas" ||
+    filters.neighborhood !== "Todos" ||
     filters.badge !== "Todos" ||
     filters.type !== "Todos" ||
     filters.minBeds > 0 ||

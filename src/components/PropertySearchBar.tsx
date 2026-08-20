@@ -2,6 +2,7 @@
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { propertyBadges, propertyTypes } from "@/lib/data";
+import { citiesByRegion, getCategoriesForCity } from "@/lib/locations";
 import {
   bedFilterOptions,
   defaultFilters,
@@ -43,6 +44,10 @@ export default function PropertySearchBar({
     color: "#2B2B2B",
   };
 
+  // Categorias e bairros da cidade selecionada
+  const categories = filters.city !== "Todas" ? getCategoriesForCity(filters.city) : [];
+  const hasCategories = categories.some((c) => c.category !== "");
+
   return (
     <div
       className="rounded-sm p-4 sm:p-6"
@@ -83,7 +88,71 @@ export default function PropertySearchBar({
         Filtros
       </div>
 
-      {/* Selects — 2x2 grid on mobile, 4 cols on desktop */}
+      {/* Cidade (esquerda) + Bairro (direita) */}
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        {/* Cidade — agrupada por Região */}
+        <label className="flex flex-col gap-1.5">
+          <span
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "#4a4a4a" }}
+          >
+            Cidade
+          </span>
+          <select
+            value={filters.city}
+            onChange={(e) =>
+              onChange({ ...filters, city: e.target.value, neighborhood: "Todos" })
+            }
+            className={selectClass}
+            style={selectStyle}
+          >
+            <option value="Todas">Todas as cidades</option>
+            {Object.entries(citiesByRegion).map(([region, regionCities]) => (
+              <optgroup key={region} label={region}>
+                {regionCities.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+
+        {/* Bairro — agrupado por Categoria (optgroup) */}
+        <label className="flex flex-col gap-1.5">
+          <span
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "#4a4a4a" }}
+          >
+            Bairro
+          </span>
+          <select
+            value={filters.neighborhood}
+            onChange={(e) => updateFilter("neighborhood", e.target.value)}
+            className={selectClass}
+            style={selectStyle}
+            disabled={filters.city === "Todas"}
+          >
+            <option value="Todos">
+              {filters.city === "Todas" ? "Selecione uma cidade" : "Todos os bairros"}
+            </option>
+            {hasCategories
+              ? categories.map((cat) => (
+                  <optgroup key={cat.category} label={cat.category}>
+                    {cat.neighborhoods.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </optgroup>
+                ))
+              : categories.flatMap((cat) =>
+                  cat.neighborhoods.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))
+                )}
+          </select>
+        </label>
+      </div>
+
+      {/* Demais filtros — 2x2 grid no mobile, 4 cols no desktop */}
       <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <label className="flex flex-col gap-1.5">
           <span

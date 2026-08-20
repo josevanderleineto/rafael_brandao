@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { propertyBadges, propertyTypes, type Property } from "@/lib/data";
 import { defaultSiteContent, type SiteContent } from "@/lib/site-content-defaults";
+import { cities, cityNeighborhoods, citiesByRegion, getCategoriesForCity } from "@/lib/locations";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -389,8 +390,12 @@ export default function AdminPage() {
               <Field label="Título" value={form.title} onChange={(v) => change("title", v)} className="sm:col-span-2" required />
               <Select label="Finalidade" value={form.badge} options={propertyBadges} onChange={(v) => change("badge", v as FormProperty["badge"])} />
               <Select label="Tipo" value={form.type} options={propertyTypes} onChange={(v) => change("type", v as FormProperty["type"])} />
-              <Field label="Bairro / região" value={form.neighborhood} onChange={(v) => change("neighborhood", v)} required />
-              <Field label="Cidade" value={form.city} onChange={(v) => change("city", v)} required />
+              <CityNeighborhoodFields
+                city={form.city}
+                neighborhood={form.neighborhood}
+                onCityChange={(v) => { change("city", v); change("neighborhood", ""); }}
+                onNeighborhoodChange={(v) => change("neighborhood", v)}
+              />
               <Field label="Valor (R$)" type="number" value={form.priceValue} onChange={(v) => change("priceValue", Number(v))} min="0" required />
               <Field label="Área (m²)" type="number" value={form.area} onChange={(v) => change("area", Number(v))} min="0" required />
               <Field label="Quartos" type="number" value={form.beds} onChange={(v) => change("beds", Number(v))} min="0" required />
@@ -1062,6 +1067,173 @@ function Field({
       <input {...props} value={value} onChange={(e) => onChange(e.target.value)}
         className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-amber-600" />
     </label>
+  );
+}
+
+// ─── CityNeighborhoodFields ──────────────────────────────────────────────────
+
+function CityNeighborhoodFields({
+  city, neighborhood, onCityChange, onNeighborhoodChange,
+}: {
+  city: string;
+  neighborhood: string;
+  onCityChange: (v: string) => void;
+  onNeighborhoodChange: (v: string) => void;
+}) {
+  const [customCity, setCustomCity] = useState("");
+  const [showCustomCity, setShowCustomCity] = useState(false);
+  const [customNeighborhood, setCustomNeighborhood] = useState("");
+  const [showCustomNeighborhood, setShowCustomNeighborhood] = useState(false);
+
+  const knownCities = cities;
+  const isKnownCity = knownCities.includes(city);
+  const categories = isKnownCity ? getCategoriesForCity(city) : [];
+  const hasCategories = categories.some((c) => c.category !== "");
+  const allNeighborhoods = categories.flatMap((c) => c.neighborhoods);
+
+  function handleCitySelect(value: string) {
+    if (value === "__new__") {
+      setShowCustomCity(true);
+    } else {
+      setShowCustomCity(false);
+      setCustomCity("");
+      onCityChange(value);
+    }
+  }
+
+  function handleCustomCityConfirm() {
+    if (customCity.trim()) {
+      onCityChange(customCity.trim());
+      setShowCustomCity(false);
+    }
+  }
+
+  function handleNeighborhoodSelect(value: string) {
+    if (value === "__new__") {
+      setShowCustomNeighborhood(true);
+    } else {
+      setShowCustomNeighborhood(false);
+      setCustomNeighborhood("");
+      onNeighborhoodChange(value);
+    }
+  }
+
+  function handleCustomNeighborhoodConfirm() {
+    if (customNeighborhood.trim()) {
+      onNeighborhoodChange(customNeighborhood.trim());
+      setShowCustomNeighborhood(false);
+    }
+  }
+
+  const inputCls = "mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-amber-600";
+  const selectCls = "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-amber-600";
+
+  return (
+    <>
+      {/* Cidade — esquerda, agrupada por Região */}
+      <div className="mt-4">
+        <span className="text-sm font-medium text-slate-700">Cidade</span>
+        {showCustomCity ? (
+          <div className="mt-1.5 flex gap-2">
+            <input
+              value={customCity}
+              onChange={(e) => setCustomCity(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCustomCityConfirm())}
+              placeholder="Digite o nome da cidade"
+              className={inputCls}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={handleCustomCityConfirm}
+              className="shrink-0 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowCustomCity(false); setCustomCity(""); }}
+              className="shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <select
+            value={isKnownCity ? city : (city ? "__custom__" : "")}
+            onChange={(e) => handleCitySelect(e.target.value)}
+            className={selectCls}
+            required
+          >
+            <option value="" disabled>Selecione a cidade</option>
+            {Object.entries(citiesByRegion).map(([region, regionCities]) => (
+              <optgroup key={region} label={region}>
+                {regionCities.map((c) => <option key={c} value={c}>{c}</option>)}
+              </optgroup>
+            ))}
+            {!isKnownCity && city && <option value="__custom__">{city} (personalizada)</option>}
+            <option value="__new__">+ Adicionar cidade nova...</option>
+          </select>
+        )}
+        {!showCustomCity && !isKnownCity && city && (
+          <p className="mt-1 text-xs text-amber-700">⚠️ Cidade personalizada: <strong>{city}</strong></p>
+        )}
+      </div>
+
+      {/* Bairro — direita, agrupado por Categoria */}
+      <div className="mt-4">
+        <span className="text-sm font-medium text-slate-700">Bairro / região</span>
+        {showCustomNeighborhood ? (
+          <div className="mt-1.5 flex gap-2">
+            <input
+              value={customNeighborhood}
+              onChange={(e) => setCustomNeighborhood(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCustomNeighborhoodConfirm())}
+              placeholder="Digite o bairro"
+              className={inputCls}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={handleCustomNeighborhoodConfirm}
+              className="shrink-0 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowCustomNeighborhood(false); setCustomNeighborhood(""); }}
+              className="shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <select
+            value={neighborhood}
+            onChange={(e) => handleNeighborhoodSelect(e.target.value)}
+            className={selectCls}
+            required
+          >
+            <option value="" disabled>
+              {!city ? "Selecione a cidade primeiro" : "Selecione o bairro"}
+            </option>
+            {hasCategories
+              ? categories.map((cat) => (
+                  <optgroup key={cat.category} label={cat.category}>
+                    {cat.neighborhoods.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </optgroup>
+                ))
+              : allNeighborhoods.map((n) => <option key={n} value={n}>{n}</option>)
+            }
+            {neighborhood && !allNeighborhoods.includes(neighborhood) && (
+              <option value={neighborhood}>{neighborhood} (digitado)</option>
+            )}
+            <option value="__new__">+ Digitar bairro...</option>
+          </select>
+        )}
+      </div>
+    </>
   );
 }
 
