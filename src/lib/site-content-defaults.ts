@@ -59,7 +59,7 @@ export const defaultSiteContent: SiteContent = {
   "services.video.subtitle": "Assista e veja como atuamos com excelência no mercado imobiliário da Bahia.",
 
   // Footer
-  "footer.instagram": "https://instagram.com",
+  "footer.instagram": "https://www.instagram.com/rafaelbrandao2020?stkn=NHN1Nmc4eTdsdmNx",
   "footer.linkedin": "https://linkedin.com",
   "footer.copyright": "© 2026 Rafael Brandão · Desenvolvimento Imobiliário. Todos os direitos reservados.",
 };

@@ -49,7 +49,11 @@ function LinkedinIcon({ className }: { className?: string }) {
 
 export default function Footer({ content = {} }: { content?: SiteContent }) {
   const copyright = c(content, "footer.copyright");
-  const instagramHref = c(content, "footer.instagram") || "https://instagram.com";
+  const configuredInstagram = c(content, "footer.instagram");
+  const instagramHref =
+    configuredInstagram === "https://instagram.com"
+      ? defaultSiteContent["footer.instagram"]
+      : configuredInstagram;
   const linkedinHref = c(content, "footer.linkedin") || "https://linkedin.com";
   const whatsappHref = siteData.whatsappUrl;
 

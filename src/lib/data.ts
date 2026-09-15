@@ -3,7 +3,7 @@ export const siteData = {
   creci: "CRECI-BA sob consulta",
   phone: "(71) 99621-5629",
   phoneRaw: "5571996215629",
-  email: "brandaoandrade1979@gmail.com",
+  email: "rafaelbrandao.imoveis@outlook.com",
   address: "Salvador, Região Metropolitana e Litoral Norte da Bahia",
   whatsappUrl: "https://wa.me/5571996215629",
 };
