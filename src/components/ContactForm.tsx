@@ -5,23 +5,43 @@ import { siteData } from "@/lib/data";
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
+    setStatus(null);
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
     const message = formData.get("message") as string;
 
-    const text = encodeURIComponent(
-      `Olá! Meu nome é ${name}.\nTelefone: ${phone}\n\n${message}`,
-    );
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, message }),
+      });
 
-    window.open(`${siteData.whatsappUrl}?text=${text}`, "_blank");
-    setIsSubmitting(false);
-    event.currentTarget.reset();
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error || "Não foi possível enviar sua mensagem.");
+      }
+
+      const text = encodeURIComponent(
+        `Olá! Meu nome é ${name}.\nTelefone: ${phone}\n\n${message}`,
+      );
+      window.open(`${siteData.whatsappUrl}?text=${text}`, "_blank");
+      form.reset();
+      setStatus("Mensagem enviada com sucesso!");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Não foi possível enviar sua mensagem.");
+    } finally {
+      setIsSubmitting(false);
+    }
+
   }
 
   const inputClass =
@@ -89,6 +109,11 @@ export default function ContactForm() {
       >
         {isSubmitting ? "Enviando..." : "Enviar Mensagem"}
       </button>
+      {status && (
+        <p aria-live="polite" className="text-sm" style={{ color: "rgba(247,247,245,0.8)" }}>
+          {status}
+        </p>
+      )}
     </form>
   );
 }

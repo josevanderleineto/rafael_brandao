@@ -7,6 +7,15 @@
 3. No SQL Editor do Neon, execute `db/schema.sql`.
 4. Defina `ADMIN_PASSWORD` antes de publicar o site.
 
+## Formulário de contato por Gmail
+
+1. Ative a verificação em duas etapas na conta Google que enviará as mensagens.
+2. Em `https://myaccount.google.com/apppasswords`, crie uma senha de app para este site.
+3. Copie `.env.example` para `.env.local` e preencha `GMAIL_USER`, `GMAIL_APP_PASSWORD` e `CONTACT_RECEIVER_EMAIL`.
+4. Instale as dependências com `npm install` antes de iniciar ou publicar o projeto.
+
+`GMAIL_APP_PASSWORD` deve conter a senha de app de 16 caracteres, sem espaços. Nunca publique `.env.local` nem coloque essa senha em código ou em variáveis prefixadas com `NEXT_PUBLIC_`.
+
 O catálogo e o painel usam `DATABASE_URL` apenas no servidor; a variável não é enviada ao navegador.
 
 ## Desenvolvimento
