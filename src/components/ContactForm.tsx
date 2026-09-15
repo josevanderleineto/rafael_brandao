@@ -30,13 +30,18 @@ export default function ContactForm() {
         throw new Error(result.error || "Não foi possível enviar sua mensagem.");
       }
 
+      const text = encodeURIComponent(
+        `Olá! Meu nome é ${name}.\nTelefone: ${phone}\n\n${message}`,
+      );
+      window.open(`${siteData.whatsappUrl}?text=${text}`, "_blank");
       form.reset();
-      setStatus("Sua mensagem foi enviada com sucesso!");
+      setStatus("Mensagem enviada com sucesso!");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Não foi possível enviar sua mensagem.");
     } finally {
       setIsSubmitting(false);
     }
+
   }
 
   const inputClass =
@@ -112,3 +117,5 @@ export default function ContactForm() {
     </form>
   );
 }
+
+{}
