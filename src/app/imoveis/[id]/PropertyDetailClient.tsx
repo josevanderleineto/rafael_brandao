@@ -316,7 +316,7 @@ export default function PropertyDetailClient({ property }: { property: Property 
       <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <Link
-            href="/#imoveis"
+            href="/imoveis"
             className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition-colors hover:text-slate-900"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -434,12 +434,12 @@ export default function PropertyDetailClient({ property }: { property: Property 
                   Falar no WhatsApp
                 </a>
 
-                <a
+                <Link
                   href="/#contato"
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3.5 font-semibold text-slate-700 transition-colors hover:bg-slate-100"
                 >
                   Enviar mensagem
-                </a>
+                </Link>
               </div>
 
               <div className="mt-6 border-t border-slate-100 pt-5">

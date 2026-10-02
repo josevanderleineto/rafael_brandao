@@ -1,12 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, X } from "lucide-react";
 import { navLinks, siteData } from "@/lib/data";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  /**
+   * Âncoras (#imoveis, #sobre...) só existem na home. Em outras páginas
+   * (/imoveis, /imoveis/[id]) apontá-las direto quebraria a navegação.
+   */
+  function hrefFor(href: string) {
+    return href.startsWith("/") || isHome ? href : `/${href}`;
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -38,7 +49,7 @@ export default function Header() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
           {/* ── Logo ── */}
-          <a href="#inicio" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário - Início">
+          <a href={hrefFor("#inicio")} className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário - Início">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/rafael-logo.svg"
@@ -71,7 +82,7 @@ export default function Header() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={hrefFor(link.href)}
                 className="nav-link text-xs font-medium uppercase tracking-[0.14em] transition-colors"
                 style={{ color: "rgba(247,247,245,0.85)" }}
               >
@@ -144,7 +155,7 @@ export default function Header() {
           {navLinks.map((link, i) => (
             <a
               key={link.href}
-              href={link.href}
+              href={hrefFor(link.href)}
               onClick={() => setIsOpen(false)}
               className="flex items-center font-medium uppercase"
               style={{

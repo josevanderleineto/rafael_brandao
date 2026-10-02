@@ -11,6 +11,7 @@ export const siteData = {
 export const navLinks = [
   { label: "Início", href: "#inicio" },
   { label: "Imóveis", href: "#imoveis" },
+  { label: "Catálogo", href: "/imoveis" },
   { label: "Serviços", href: "#servicos" },
   { label: "Sobre", href: "#sobre" },
   { label: "Contato", href: "#contato" },

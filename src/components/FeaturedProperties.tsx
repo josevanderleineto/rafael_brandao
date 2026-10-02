@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Property } from "@/lib/data";
 import { defaultFilters, filterProperties } from "@/lib/property-utils";
@@ -9,13 +10,28 @@ import PropertySearchBar from "./PropertySearchBar";
 
 const PAGE_SIZE = 6; // imóveis exibidos inicialmente
 
-export default function FeaturedProperties() {
+type FeaturedPropertiesProps = {
+  /**
+   * Catálogo vindo do servidor. Renderizar os cards já no HTML inicial é
+   * essencial para o rastreamento: o Googlebot precisa ver os links
+   * /imoveis/[id] sem depender da execução do JavaScript.
+   */
+  initialProperties?: Property[];
+};
+
+export default function FeaturedProperties({
+  initialProperties = [],
+}: FeaturedPropertiesProps) {
   const [filters, setFilters] = useState(defaultFilters);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  // Sem dados do servidor (fallback), mostra skeleton até o fetch terminar.
+  const [loading, setLoading] = useState(initialProperties.length === 0);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
+    // Se o servidor já entregou o catálogo, não há o que recarregar.
+    if (initialProperties.length > 0) return;
+
     fetch("/api/properties")
       .then((res) => res.json())
       .then((data) => {
@@ -25,6 +41,8 @@ export default function FeaturedProperties() {
       })
       .catch((err) => console.error("Erro ao carregar imóveis:", err))
       .finally(() => setLoading(false));
+    // `initialProperties` é estável entre renders (vem do servidor).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Reinicia paginação sempre que filtros mudarem
@@ -167,8 +185,14 @@ export default function FeaturedProperties() {
           </div>
         )}
 
-        {/* CTA fixo no fundo */}
-        <div className="mt-14 text-center">
+        {/* CTAs — catálogo completo e contato */}
+        <div className="mt-14 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <Link
+            href="/imoveis"
+            className="btn-navy inline-flex items-center justify-center rounded-sm px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.1em]"
+          >
+            Ver catálogo completo
+          </Link>
           <a
             href="#contato"
             className="btn-navy inline-flex items-center justify-center rounded-sm px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.1em]"

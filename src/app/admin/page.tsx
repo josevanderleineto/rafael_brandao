@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Check, ChevronDown, ChevronUp, Globe, LogOut, Pencil, Play,
   Plus, Trash2, Upload, X, ImageIcon, Loader2
@@ -97,11 +98,18 @@ async function uploadFile(file: File): Promise<{ url: string; type: string }> {
 
 type AdminTab = "imoveis" | "site";
 
+type CaptchaChallenge = { question: string; token: string };
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
-  const [username, setUsername] = useState("rafaelbrandao");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState<AdminTab>("imoveis");
+
+  // Captcha
+  const [captcha, setCaptcha] = useState<CaptchaChallenge | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   // Properties state
   const [properties, setProperties] = useState<Property[]>([]);
@@ -133,16 +141,47 @@ export default function AdminPage() {
 
   useEffect(() => { void loadProperties(); void loadSiteContent(); }, []);
 
+  // ── Login com captcha ──────────────────────────────────────────────────────
+
   async function login(event: FormEvent) {
     event.preventDefault();
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    if (!response.ok) return notify("Usuário ou senha inválidos.", "err");
-    setAuthenticated(true);
-    setMessage("");
+    setLoggingIn(true);
+
+    if (!captcha) {
+      setLoggingIn(false);
+      notify("Verificação ainda não carregou. Aguarde um instante.", "err");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          password,
+          captchaToken: captcha.token,
+          captchaAnswer: captchaAnswer,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({})) as { error?: string };
+
+      if (!response.ok) {
+        // Sempre renova o desafio: resposta errada invalida o captcha usado.
+        notify(result.error || "Não foi possível entrar.", "err");
+        await refreshCaptcha();
+        return;
+      }
+
+      setCaptchaAnswer("");
+      setAuthenticated(true);
+      setMessage("");
+    } catch {
+      notify("Erro de conexão. Tente novamente.", "err");
+    } finally {
+      setLoggingIn(false);
+    }
   }
 
   function notify(msg: string, type: "ok" | "err" = "ok") {
@@ -271,7 +310,26 @@ export default function AdminPage() {
     await fetch("/api/auth/logout", { method: "POST" });
     setAuthenticated(false);
     setPassword("");
+    setCaptchaAnswer("");
+    await refreshCaptcha();
   }
+
+  /** Busca um novo desafio de captcha no servidor. */
+  async function refreshCaptcha() {
+    try {
+      const res = await fetch("/api/auth/captcha", { cache: "no-store" });
+      if (!res.ok) throw new Error("captcha indisponível");
+      setCaptcha((await res.json()) as CaptchaChallenge);
+      setCaptchaAnswer("");
+    } catch {
+      setCaptcha(null);
+    }
+  }
+
+  // Carrega o primeiro captcha assim que a tela de login aparece.
+  useEffect(() => {
+    if (!authenticated && !captcha) void refreshCaptcha();
+  }, [authenticated, captcha]);
 
   // ── Site content save ─────────────────────────────────────────────────────
 
@@ -314,8 +372,13 @@ export default function AdminPage() {
         username={username}
         password={password}
         message={message}
+        captcha={captcha}
+        captchaAnswer={captchaAnswer}
+        submitting={loggingIn}
         onUsername={setUsername}
         onPassword={setPassword}
+        onCaptchaAnswer={setCaptchaAnswer}
+        onRefreshCaptcha={refreshCaptcha}
         onSubmit={login}
       />
     );
@@ -333,9 +396,9 @@ export default function AdminPage() {
             <h1 className="text-xl font-bold">Rafael Brandão Imóveis</h1>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/" target="_blank" className="text-sm font-semibold text-slate-300 hover:text-white">
+            <Link href="/" target="_blank" className="text-sm font-semibold text-slate-300 hover:text-white">
               Ver site ↗
-            </a>
+            </Link>
             <button
               onClick={logout}
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold"
@@ -1031,10 +1094,16 @@ function VideoUpload({
 // ─── LoginScreen ──────────────────────────────────────────────────────────────
 
 function LoginScreen({
-  username, password, message, onUsername, onPassword, onSubmit,
+  username, password, message, captcha, captchaAnswer, submitting,
+  onUsername, onPassword, onCaptchaAnswer, onRefreshCaptcha, onSubmit,
 }: {
   username: string; password: string; message: string;
+  captcha: CaptchaChallenge | null;
+  captchaAnswer: string;
+  submitting: boolean;
   onUsername: (v: string) => void; onPassword: (v: string) => void;
+  onCaptchaAnswer: (v: string) => void;
+  onRefreshCaptcha: () => void;
   onSubmit: (e: FormEvent) => void;
 }) {
   return (
@@ -1043,11 +1112,82 @@ function LoginScreen({
         <p className="text-sm font-semibold uppercase tracking-[.2em] text-amber-600">Rafael Brandão Imóveis</p>
         <h1 className="mt-3 text-3xl font-bold text-slate-900">Área administrativa</h1>
         <p className="mt-3 text-slate-600">Acesse para publicar e atualizar os imóveis do site.</p>
-        <Field label="Usuário" value={username} onChange={onUsername} required />
-        <Field label="Senha" value={password} onChange={onPassword} type="password" required />
+
+        <Field
+          label="Usuário"
+          value={username}
+          onChange={onUsername}
+          required
+          autoComplete="username"
+        />
+        <Field
+          label="Senha"
+          value={password}
+          onChange={onPassword}
+          type="password"
+          required
+          autoComplete="current-password"
+        />
+
+        {/* ── Captcha ── */}
+        <div className="mt-4">
+          <span className="text-sm font-medium text-slate-700">Verificação</span>
+          {captcha ? (
+            <div className="mt-1.5 flex gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={captchaAnswer}
+                onChange={(e) => onCaptchaAnswer(e.target.value.replace(/[^\d-]/g, ""))}
+                placeholder="Resposta"
+                required
+                aria-label="Resposta do captcha"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-amber-600"
+              />
+              <button
+                type="button"
+                onClick={onRefreshCaptcha}
+                aria-label="Gerar novo captcha"
+                title="Gerar novo captcha"
+                className="shrink-0 rounded-lg border border-slate-300 px-3 text-slate-500 transition-colors hover:border-amber-600 hover:text-amber-700"
+              >
+                <Loader2 className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-1.5 flex items-center gap-2 text-sm text-slate-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando verificação…
+            </div>
+          )}
+          {captcha && (
+            <p className="mt-1.5 text-xs text-slate-500">
+              {captcha.question}{" "}
+              <button
+                type="button"
+                onClick={onRefreshCaptcha}
+                className="underline underline-offset-2 hover:text-amber-700"
+              >
+                Trocar
+              </button>
+            </p>
+          )}
+        </div>
+
         {message && <p className="mt-3 text-sm text-red-600">{message}</p>}
-        <button className="mt-6 w-full rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white">Entrar</button>
-        <a href="/" className="mt-5 block text-center text-sm text-slate-500">Voltar para o site</a>
+
+        <button
+          disabled={submitting || !captcha}
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting ? "Entrando…" : "Entrar"}
+        </button>
+
+        <Link href="/" className="mt-5 block text-center text-sm text-slate-500">
+          Voltar para o site
+        </Link>
       </form>
     </main>
   );
@@ -1060,6 +1200,7 @@ function Field({
 }: {
   label: string; value: string | number; onChange: (v: string) => void;
   className?: string; type?: string; min?: string; required?: boolean;
+  autoComplete?: string;
 }) {
   return (
     <label className={`mt-4 block ${className}`}>

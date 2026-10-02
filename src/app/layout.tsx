@@ -1,15 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { homeMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Rafael Brandão | Desenvolvimento Imobiliário",
-  description:
-    "Locação, administração, vendas, avaliações e assessoria imobiliária em Salvador, Região Metropolitana e Litoral Norte da Bahia. CRECI-BA 7691 | CNAI 47.907.",
+  ...homeMetadata,
   icons: {
-    icon: "/rafael-logo.svg",
+    icon: [
+      { url: "/rafael-logo.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
     shortcut: "/rafael-logo.svg",
     apple: "/rafael-logo.svg",
   },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#12314D",
+  colorScheme: "light",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

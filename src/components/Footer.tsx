@@ -74,7 +74,7 @@ export default function Footer({ content = {} }: { content?: SiteContent }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top row — logo + socials */}
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <a href="#inicio" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário">
+          <a href="/" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="Rafael Brandão Desenvolvimento Imobiliário">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/rafael-logo.svg"

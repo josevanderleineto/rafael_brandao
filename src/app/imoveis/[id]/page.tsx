@@ -1,29 +1,31 @@
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import { getPropertyById } from "@/lib/property-store";
+import { JsonLd, propertyLd, propertyMetadata } from "@/lib/seo";
 import PropertyDetailClient from "./PropertyDetailClient";
 
 export const runtime = "nodejs";
 
+/**
+ * Gera metadata enriquecida por imóvel: canonical, Open Graph com as fotos
+ * do anúncio e canonicalização para evitar conteúdo duplicado.
+ */
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
-}): Promise<Metadata> {
+}): Promise<ReturnType<typeof propertyMetadata>> {
   const { id } = await params;
   const property = await getPropertyById(Number(id));
-  if (!property) return { title: "Imóvel não encontrado | Rafael Brandão Imóveis" };
 
-  return {
-    title: `${property.title} | Rafael Brandão Imóveis`,
-    description:
-      property.description?.slice(0, 155) ||
-      `${property.type} para ${property.badge} em ${property.neighborhood}, ${property.city}. ${property.price}.`,
-    openGraph: {
-      title: property.title,
-      images: property.image ? [{ url: property.image }] : [],
-    },
-  };
+  if (!property) {
+    return {
+      title: "Imóvel não encontrado",
+      description: "Este imóvel não está mais disponível no catálogo.",
+      robots: { index: false, follow: true },
+    };
+  }
+
+  return propertyMetadata(property);
 }
 
 export default async function PropertyDetailPage({
@@ -35,5 +37,11 @@ export default async function PropertyDetailPage({
   const property = await getPropertyById(Number(id));
   if (!property) notFound();
 
-  return <PropertyDetailClient property={property} />;
+  return (
+    <>
+      <JsonLd data={propertyLd(property)} />
+      <PropertyDetailClient property={property} />
+    </>
+  );
 }
+
