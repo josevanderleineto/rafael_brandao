@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getProperties } from "@/lib/property-store";
+import { unstable_cache } from "next/cache";
+import { getPropertiesCached } from "@/lib/property-store";
 import { absoluteUrl } from "@/lib/site-config";
 
 /**
@@ -11,6 +12,13 @@ import { absoluteUrl } from "@/lib/site-config";
  * Reexecuta a cada 30 minutos porque o catálogo muda pelo painel /admin.
  */
 export const revalidate = 1800;
+
+/** Cache próprio do catálogo para a lista, isolado do `unstable_cache` interno. */
+const cachedList = unstable_cache(
+  async () => getPropertiesCached(),
+  ["sitemap", "properties"],
+  { revalidate: 1800, tags: ["properties"] }
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -29,9 +37,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  let properties: Awaited<ReturnType<typeof getProperties>> = [];
+  let properties: Awaited<ReturnType<typeof getPropertiesCached>> = [];
   try {
-    properties = await getProperties();
+    properties = await cachedList();
   } catch (error) {
     console.warn("sitemap: falha ao carregar imóveis, emitindo apenas URLs estáticas:", error);
   }

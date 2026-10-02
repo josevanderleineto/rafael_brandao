@@ -1,9 +1,24 @@
-export default function Loading() {
+/**
+ * Esqueleto de carregamento da página de imóvel.
+ *
+ * Antes isto era um `loading.tsx` no segmento. Funcionava, porém quebrava o
+ * SEO: a barreira Suspense do segmento permitia ao React fechar o <head>
+ * antes de a metadata ser resolvida, e title/canonical/og:image acabavam
+ * transmitidos num chunk posterior ao </head> — fora do <head>, onde o
+ * Googlebot e os rastreadores de redes sociais (WhatsApp, Facebook, LinkedIn)
+ * procuram. Confirmado em produção: as páginas de imóvel saíam sem nenhuma
+ * dessas tags.
+ *
+ * Agora o esqueleto é usado como `fallback` de um <Suspense> interno ao
+ * componente de página, deixando a metadata (que vem de `generateMetadata`,
+ * fora da barreira) resolvida antes do shell.
+ */
+export default function PropertyDetailSkeleton() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Barra superior skeleton */}
       <div className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="h-5 w-32 animate-pulse rounded-full bg-slate-200" />
           <div className="h-8 w-28 animate-pulse rounded-full bg-slate-200" />
         </div>

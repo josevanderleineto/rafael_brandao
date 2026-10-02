@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getPropertyById } from "@/lib/property-store";
+import { getPropertyByIdCached } from "@/lib/property-store";
 import { JsonLd, propertyLd, propertyMetadata } from "@/lib/seo";
 import PropertyDetailClient from "./PropertyDetailClient";
+import PropertyDetailSkeleton from "./PropertyDetailSkeleton";
 
 export const runtime = "nodejs";
 
@@ -15,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<ReturnType<typeof propertyMetadata>> {
   const { id } = await params;
-  const property = await getPropertyById(Number(id));
+  const property = await getPropertyByIdCached(Number(id));
 
   if (!property) {
     return {
@@ -34,13 +36,21 @@ export default async function PropertyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const property = await getPropertyById(Number(id));
+  const property = await getPropertyByIdCached(Number(id));
   if (!property) notFound();
 
   return (
     <>
       <JsonLd data={propertyLd(property)} />
-      <PropertyDetailClient property={property} />
+      {/*
+        Suspense aqui, e não via loading.tsx no segmento: uma barreira no
+        segmento deixa o React fechar o <head> antes da metadata, e title,
+        canonical e og:image saem transmitidos depois do </head> — invisíveis
+        para o Googlebot e para os previews de redes sociais.
+      */}
+      <Suspense fallback={<PropertyDetailSkeleton />}>
+        <PropertyDetailClient property={property} />
+      </Suspense>
     </>
   );
 }

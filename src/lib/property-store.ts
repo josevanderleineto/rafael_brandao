@@ -1,6 +1,7 @@
 import "server-only";
 
 import { neon } from "@neondatabase/serverless";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { propertyBadges, propertyTypes, type Property, type PropertyInput } from "./data";
 import { formatEmbedVideoUrl } from "./property-utils";
 
@@ -55,6 +56,16 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs = 1200): Promise<T> {
       setTimeout(() => reject(new Error("Timeout de conexão ao banco de dados")), timeoutMs)
     ),
   ]);
+}
+
+/**
+ * Tag de cache do catálogo. Invalidada a cada gravação.
+ */
+const CACHE_TAG = "properties";
+
+/** Invalida o cache do catálogo após criar, editar ou remover. */
+export function revalidateProperties() {
+  revalidateTag(CACHE_TAG, "max");
 }
 
 export async function getProperties(): Promise<Property[]> {
@@ -113,6 +124,30 @@ export async function getPropertyById(id: number): Promise<Property | null> {
   }
 }
 
+/**
+ * Versões em cache do catálogo (60s, invalidadas a cada gravação).
+ *
+ * Além de aliviar o Neon, isto resolve um problema de SEO: `generateMetadata`
+ * das páginas de imóvel roda antes do shell do HTML. Sem cache, cada visita
+ * pagava uma ida ao banco (~300ms em produção) e o Next acabava transmitindo
+ * <title>, canonical e og:image num chunk posterior ao </head> — fora do
+ * <head>, onde o Googlebot e os rastreadores de redes sociais (WhatsApp,
+ * Facebook, LinkedIn) procuram. Com cache a resposta é imediata e a metadata
+ * volta para o <head>.
+ */
+export const getPropertiesCached = unstable_cache(getProperties, ["properties", "list"], {
+  revalidate: 60,
+  tags: [CACHE_TAG],
+});
+
+export function getPropertyByIdCached(id: number) {
+  return unstable_cache(
+    () => getPropertyById(id),
+    ["properties", "detail", String(id)],
+    { revalidate: 60, tags: [CACHE_TAG] }
+  )();
+}
+
 export function normalizeProperty(input: unknown): PropertyInput {
   const value = input as Record<string, unknown>;
   const requiredText = ["title", "neighborhood", "city", "image"] as const;
@@ -156,6 +191,7 @@ export async function createProperty(input: PropertyInput) {
       id, title, "priceValue" AS price_value, badge, type, neighborhood, city, image,
       beds, baths, area, featured, description, photos, video_url
   `) as PropertyRow[];
+  revalidateProperties();
   return toProperty(rows[0]);
 }
 
@@ -184,11 +220,13 @@ export async function updateProperty(id: number, input: PropertyInput) {
       id, title, "priceValue" AS price_value, badge, type, neighborhood, city, image,
       beds, baths, area, featured, description, photos, video_url
   `) as PropertyRow[];
+  revalidateProperties();
   return rows[0] ? toProperty(rows[0]) : null;
 }
 
 export async function deleteProperty(id: number) {
   const sql = database();
   const rows = await sql`DELETE FROM properties WHERE id = ${id} RETURNING id`;
+  revalidateProperties();
   return rows.length > 0;
 }

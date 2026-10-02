@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertiesGrid from "@/components/PropertiesGrid";
-import { getProperties } from "@/lib/property-store";
+import { getPropertiesCached } from "@/lib/property-store";
 import { JsonLd, graphLd, organizationLd, propertyListLd } from "@/lib/seo";
 import { SITE_DESCRIPTION } from "@/lib/site-config";
 
@@ -26,10 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function PropertiesPage() {
-  let properties: Awaited<ReturnType<typeof getProperties>> = [];
+  let properties: Awaited<ReturnType<typeof getPropertiesCached>> = [];
   let failed = false;
   try {
-    properties = await getProperties();
+    properties = await getPropertiesCached();
   } catch (error) {
     failed = true;
     console.warn("Listagem de imóveis: falha ao consultar o banco:", error);
